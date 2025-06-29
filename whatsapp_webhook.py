@@ -6,6 +6,7 @@ from config_loader import load_config
 from agents.receptionist_agent import ReceptionistAgent
 from agents.booking_agent import BookingAgent
 from agents.faq_agent import FAQAgent
+from agents.cancel_appointment_agent import CancelAppointmentAgent
 from tools.evolution_api_client import EvolutionAPIClient
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ EVOLUTION_API_INSTANCE_KEY = os.environ.get('EVOLUTION_API_INSTANCE_KEY', 'YOUR_
 receptionist_agent = ReceptionistAgent()
 booking_agent = BookingAgent()
 faq_agent = FAQAgent()
+cancel_appointment_agent = CancelAppointmentAgent()
 evolution_api_client = EvolutionAPIClient(EVOLUTION_API_BASE_URL, EVOLUTION_API_INSTANCE_KEY)
 
 @app.route('/webhook/evolution', methods=['POST'])
@@ -76,7 +78,8 @@ def evolution_webhook():
             elif intent == 'fazer_pergunta':
                 agent_response = faq_agent.answer_question(user_text)
             elif intent == 'cancelar_horario':
-                agent_response = "Para cancelar um horário, por favor, forneça o nome completo e a data do agendamento." # Placeholder
+                cancellation_details = cancel_appointment_agent.extract_cancellation_details(user_text)
+                agent_response = cancel_appointment_agent.cancel_appointment(cancellation_details)
             elif intent == 'outro':
                 agent_response = "Olá! Como posso ajudar você hoje?"
 

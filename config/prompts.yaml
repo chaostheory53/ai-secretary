@@ -27,3 +27,11 @@ faq_prompt: |
   "{user_question}"
 
   Forneça uma resposta direta e concisa à pergunta do usuário.
+
+cancel_appointment_prompt: |
+  Você é um assistente de cancelamento de agendamentos para uma barbearia. Sua tarefa é extrair os detalhes necessários para cancelar um agendamento a partir da solicitação do usuário. Os detalhes a serem extraídos são: 'nome_completo', 'data_agendamento', e 'servico'.
+
+  Aqui está a solicitação do usuário:
+  "{user_request}"
+
+  Retorne um objeto JSON com as entidades extraídas. Se um detalhe não for mencionado, defina seu valor como null.
