@@ -93,3 +93,6 @@ env/
 # IDEs
 .idea/
 .vscode/
+
+# Custom additions for security
+config/config.yaml

@@ -14,8 +14,16 @@ app = Flask(__name__)
 # Load configuration
 config = load_config()
 DEEPGRAM_API_KEY = config.get('deepgram_api_key')
-EVOLUTION_API_BASE_URL = os.environ.get('EVOLUTION_API_BASE_URL', 'http://localhost:8080') # Default to localhost
-EVOLUTION_API_INSTANCE_KEY = os.environ.get('EVOLUTION_API_INSTANCE_KEY', 'YOUR_INSTANCE_KEY') # Replace with your instance key
+
+# Ensure API keys are available
+if not DEEPGRAM_API_KEY:
+    raise ValueError("DEEPGRAM_API_KEY environment variable not set.")
+
+EVOLUTION_API_BASE_URL = os.environ.get('EVOLUTION_API_BASE_URL', 'http://localhost:8080') # Default to localhost for development
+EVOLUTION_API_INSTANCE_KEY = os.environ.get('EVOLUTION_API_INSTANCE_KEY') # MUST be set as an environment variable
+
+if not EVOLUTION_API_INSTANCE_KEY:
+    raise ValueError("EVOLUTION_API_INSTANCE_KEY environment variable not set. Please set it for production.")
 
 # Initialize agents and clients
 receptionist_agent = ReceptionistAgent()
@@ -46,10 +54,6 @@ def evolution_webhook():
                 try:
                     audio_response = requests.get(audio_url)
                     audio_response.raise_for_status()
-
-                    if not DEEPGRAM_API_KEY:
-                        print("Deepgram API key not found in config.yaml")
-                        continue
 
                     deepgram = DeepgramClient(DEEPGRAM_API_KEY)
                     source = {'buffer': audio_response.content, 'mimetype': audio_response.headers['Content-Type']}
