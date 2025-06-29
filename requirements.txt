@@ -1,0 +1,7 @@
+deepgram-sdk
+google-generativeai
+PyYAML
+# For Google Calendar API
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
