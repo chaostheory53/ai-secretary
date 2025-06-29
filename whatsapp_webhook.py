@@ -3,47 +3,53 @@ import os
 import requests
 from deepgram import DeepgramClient, DeepgramClientOptions, LiveTranscriptionEvents, SpeakOptions, Microphone
 from config_loader import load_config
+from agents.receptionist_agent import ReceptionistAgent
+from agents.booking_agent import BookingAgent
+from agents.faq_agent import FAQAgent
+from tools.evolution_api_client import EvolutionAPIClient
 
 app = Flask(__name__)
 
 # Load configuration
 config = load_config()
 DEEPGRAM_API_KEY = config.get('deepgram_api_key')
+EVOLUTION_API_BASE_URL = os.environ.get('EVOLUTION_API_BASE_URL', 'http://localhost:8080') # Default to localhost
+EVOLUTION_API_INSTANCE_KEY = os.environ.get('EVOLUTION_API_INSTANCE_KEY', 'YOUR_INSTANCE_KEY') # Replace with your instance key
+
+# Initialize agents and clients
+receptionist_agent = ReceptionistAgent()
+booking_agent = BookingAgent()
+faq_agent = FAQAgent()
+evolution_api_client = EvolutionAPIClient(EVOLUTION_API_BASE_URL, EVOLUTION_API_INSTANCE_KEY)
 
 @app.route('/webhook/evolution', methods=['POST'])
 def evolution_webhook():
     data = request.json
     print(f"Received webhook data: {data}")
 
-    # Assuming evolutionAPI sends messages in a specific format
-    # You might need to adjust these paths based on your actual evolutionAPI payload
     messages = data.get('messages', [])
 
     for message in messages:
         message_type = message.get('type')
         user_text = None
+        from_number = message.get('from') # The sender's number
 
         if message_type == 'text':
             user_text = message.get('body')
-            print(f"Text message from {message.get('from')}: {user_text}")
-        elif message_type == 'ptt' or message_type == 'audio': # 'ptt' for push-to-talk, 'audio' for general audio
-            audio_url = message.get('fileUrl') # Assuming fileUrl for audio
+            print(f"Text message from {from_number}: {user_text}")
+        elif message_type == 'ptt' or message_type == 'audio':
+            audio_url = message.get('fileUrl')
             if audio_url:
-                print(f"Audio message from {message.get('from')}: {audio_url}")
+                print(f"Audio message from {from_number}: {audio_url}")
                 try:
-                    # Download audio file
                     audio_response = requests.get(audio_url)
-                    audio_response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+                    audio_response.raise_for_status()
 
-                    # Initialize Deepgram client
                     if not DEEPGRAM_API_KEY:
                         print("Deepgram API key not found in config.yaml")
                         continue
 
                     deepgram = DeepgramClient(DEEPGRAM_API_KEY)
-
-                    # Transcribe audio
-                    # For pt-BR, use 'pt-BR' as the language code
                     source = {'buffer': audio_response.content, 'mimetype': audio_response.headers['Content-Type']}
                     options = {"punctuate": True, "language": "pt-BR"}
 
@@ -58,11 +64,23 @@ def evolution_webhook():
         else:
             print(f"Unsupported message type: {message_type}")
 
-        if user_text:
-            # TODO: Pass user_text to ReceptionistAgent for NLU processing
-            print(f"Processed text for NLU: {user_text}")
-            # Placeholder for sending response back via evolutionAPI
-            # For now, just acknowledge receipt
+        if user_text and from_number:
+            intent = receptionist_agent.determine_intent(user_text)
+            print(f"Determined intent: {intent}")
+
+            agent_response = "Desculpe, não entendi sua solicitação." # Default response
+
+            if intent == 'agendar_horario':
+                booking_details = booking_agent.extract_booking_details(user_text)
+                agent_response = booking_agent.book_appointment(booking_details)
+            elif intent == 'fazer_pergunta':
+                agent_response = faq_agent.answer_question(user_text)
+            elif intent == 'cancelar_horario':
+                agent_response = "Para cancelar um horário, por favor, forneça o nome completo e a data do agendamento." # Placeholder
+            elif intent == 'outro':
+                agent_response = "Olá! Como posso ajudar você hoje?"
+
+            evolution_api_client.send_message(from_number, agent_response)
 
     return jsonify({"status": "received", "data": data}), 200
 
