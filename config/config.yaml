@@ -1,2 +1,42 @@
-# This file now primarily holds non-sensitive configuration.
-# API keys are loaded from environment variables for security.
+# Configuration file for Barber AI Secretary
+# This file contains non-sensitive configuration only.
+# All API keys and sensitive data are loaded from environment variables.
+
+# Application settings
+app:
+  name: "Barber AI Secretary"
+  version: "1.0.0"
+  debug: false
+
+# Webhook settings
+webhook:
+  endpoint: "/webhook/evolution"
+  timeout: 30
+
+# Database settings (connection string loaded from DATABASE_URL env var)
+database:
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "app.log"
+
+# Session management
+session:
+  timeout_minutes: 5
+  buffer_delay_seconds: 15
+ 
+# API endpoints (URLs loaded from environment variables)
+apis:
+  evolution_base_url: "${EVOLUTION_API_BASE_URL}"
+  google_calendar_credentials_path: "${GOOGLE_CALENDAR_CREDENTIALS_PATH}"
+
+# Note: API keys are loaded from e nvironment variables:
+# - DEEPGRAM_API_KEY
+# - GEMINI_API_KEY  
+# - EVOLUTION_API_INSTANCE_KEY
+# - GOOGLE_CREDENTIALS_JSON

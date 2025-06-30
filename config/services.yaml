@@ -1,0 +1,34 @@
+services:
+  corte:
+    name: "Corte"
+    price: 49.00
+    duration_minutes: 40
+    description: "Corte de cabelo tradicional"
+  
+  barba:
+    name: "Barba"
+    price: 40.00
+    duration_minutes: 20
+    description: "Fazer a barba"
+  
+  combo:
+    name: "Combo"
+    price: 79.00
+    duration_minutes: 60
+    description: "Corte + Barba"
+  
+  sobrancelha:
+    name: "Sobrancelha"
+    price: 15.00
+    duration_minutes: 0
+    description: "Aparar sobrancelha"
+
+# Default duration for unknown services (in minutes)
+default_duration_minutes: 60
+
+# Barbers configuration
+barbers:
+  - "Gabriel"
+
+# Default barber when none is specified
+default_barber: "Gabriel" 
