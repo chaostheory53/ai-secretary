@@ -9,7 +9,7 @@ class ReceptionistAgent:
         if not self.gemini_api_key:
             raise ValueError("GEMINI_API_KEY not found in config.yaml")
         genai.configure(api_key=self.gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
         # Load prompts
         with open('config/prompts.yaml', 'r') as file:

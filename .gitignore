@@ -92,7 +92,39 @@ env/
 
 # IDEs
 .idea/
-.vscode/
+.vscode/ 
 
-# Custom additions for security
+# Security and sensitive files
 config/config.yaml
+credentials.json
+token.json
+*.key
+*.pem
+*.p12
+*.crt
+*.pem
+*.p12
+*.pfx
+
+# Planning and documentation files (not needed for app functionality)
+next_steps.txt
+configurações_manuais.txt
+plano_de_implantacao_easypanel.txt
+gemini.md
+GUIA_DE_CONFIGURACAO_FINAL.md
+SERVICE_DURATION_GUIDE.md
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

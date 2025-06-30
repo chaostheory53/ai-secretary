@@ -1,0 +1,32 @@
+# --- Esquema de Serviço para EasyPanel ---
+# Versão do esquema para garantir compatibilidade futura.
+version: '1.0'
+
+# Define a lista de serviços que este arquivo irá criar.
+# Neste caso, estamos criando apenas um serviço: nosso proxy.
+services:
+
+  # Este é o nome interno do nosso serviço no EasyPanel.
+  # Use um nome descritivo, sem espaços.
+  evolution-proxy:
+
+    # O tipo de serviço que estamos criando.
+    # Esta é a linha mais importante para o EasyPanel entender o que fazer.
+    type: proxy
+
+    # Configurações da origem (o que o mundo externo vê).
+    source:
+      # O domínio público que apontará para este serviço.
+      # IMPORTANTE: Altere "evolution.seusite.com" para o seu domínio real.
+      # O EasyPanel irá gerenciar o SSL (HTTPS) para este domínio.
+      domain: evolution.frontera53.shop
+
+    # Configurações do destino (para onde o tráfego será redirecionado).
+destination:
+      # O host ou IP do serviço de destino.
+      # Usamos '127.0.0.1' (localhost) porque a Evolution API
+      # está rodando na mesma máquina que o EasyPanel.
+      host: '127.0.0.1'
+
+      # A porta na qual o serviço de destino (Evolution API) está escutando.
+      port: 3000

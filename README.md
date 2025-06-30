@@ -1,8 +1,200 @@
-# AI Secretary for Barbershop
+# Barber AI Secretary
 
-This project is a conversational AI assistant designed to act as a virtual secretary for a barbershop. It can understand spoken requests from customers, book appointments, answer frequently asked questions, and send reminders.
+A conversational AI assistant for barbershops, designed to handle appointment booking, answer FAQs, and send reminders. Features a modular, multi-agent architecture with WhatsApp integration via Evolution API.
 
-The system is built with a modular, multi-agent architecture, making it easy to maintain and extend.
+## Features
+
+- **Multi-Agent Architecture**: Specialized agents for booking, FAQ, cancellations, and reception
+- **WhatsApp Integration**: Seamless communication via Evolution API
+- **Google Calendar Integration**: Automatic appointment scheduling and management
+- **Speech-to-Text**: Voice message transcription using Deepgram
+- **Natural Language Understanding**: Intent recognition and entity extraction with Google Gemini
+- **Service Duration System**: Configurable service durations with 20-minute slot scheduling
+- **Session Management**: Smart conversation flow with timeout handling
+- **Production Ready**: Comprehensive error handling, logging, and health checks
+
+## Architecture
+
+```
+barber-ai-secretary/
+├── agents/
+│   ├── receptionist_agent.py   # Routes requests to other agents
+│   ├── booking_agent.py        # Handles appointment logic
+│   ├── faq_agent.py            # Answers frequently asked questions
+│   └── cancel_appointment_agent.py # Handles appointment cancellations
+├── tools/
+│   ├── calendar_tool.py        # Google Calendar integration
+│   └── evolution_api_client.py # WhatsApp API client
+├── config/
+│   ├── config.yaml             # Non-sensitive configuration
+│   ├── prompts.yaml            # AI prompts and responses
+│   └── services.yaml           # Service definitions and pricing
+├── main.py                     # Application entry point
+├── whatsapp_webhook.py         # Webhook handler
+├── client_manager.py           # Client session management
+├── service_manager.py          # Service configuration management
+├── database.py                 # Database connection and models
+├── config_loader.py            # Configuration loading utility
+├── requirements.txt            # Python dependencies
+└── Dockerfile                  # Production container configuration
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- API keys for:
+  - Google Gemini (for NLU)
+  - Deepgram (for speech-to-text)
+  - Evolution API (for WhatsApp)
+  - Google Calendar API credentials
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd barber-ai-secretary
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables:**
+   Create a `.env` file in the project root with:
+   ```env
+   DEEPGRAM_API_KEY="your_deepgram_key_here"
+   GEMINI_API_KEY="your_gemini_key_here"
+   EVOLUTION_API_INSTANCE_KEY="your_evolution_instance_key_here"
+   EVOLUTION_API_BASE_URL="http://localhost:8080"
+   GOOGLE_CALENDAR_CREDENTIALS_PATH="/path/to/your/credentials.json"
+   DATABASE_URL="postgresql://user:password@host:port/database_name"
+   ```
+
+4. **Set up Google Calendar credentials:**
+   - Follow Google's instructions to obtain a `credentials.json` file
+   - Enable Google Calendar API in your Google Cloud project
+   - Place the credentials file in a secure location
+
+5. **Run the application:**
+   ```bash
+   python whatsapp_webhook.py
+   ```
+
+## Configuration
+
+### Services Configuration
+
+Edit `config/services.yaml` to customize your barbershop services:
+
+```yaml
+services:
+  corte:
+    name: "Corte"
+    price: 49.00
+    duration_minutes: 40
+    description: "Corte de cabelo tradicional"
+  
+  barba:
+    name: "Barba"
+    price: 40.00
+    duration_minutes: 20
+    description: "Fazer a barba"
+```
+
+### AI Prompts
+
+Customize the AI assistant's personality and responses in `config/prompts.yaml`.
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DEEPGRAM_API_KEY` | Deepgram API key for speech-to-text | Yes |
+| `GEMINI_API_KEY` | Google Gemini API key for NLU | Yes |
+| `EVOLUTION_API_INSTANCE_KEY` | Evolution API instance key | Yes |
+| `EVOLUTION_API_BASE_URL` | Evolution API base URL | Yes |
+| `GOOGLE_CALENDAR_CREDENTIALS_PATH` | Path to Google Calendar credentials | Yes |
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+
+## Security
+
+### 🔒 Security Best Practices
+
+This project follows security best practices:
+
+- **No sensitive data in code**: All API keys and credentials are loaded from environment variables
+- **Secure configuration**: Sensitive files are excluded from version control via `.gitignore`
+- **Input validation**: All user inputs are validated and sanitized
+- **Error handling**: Comprehensive error handling prevents information leakage
+- **Rate limiting**: Built-in rate limiting to prevent abuse
+- **Logging**: Secure logging without sensitive data exposure
+
+### Files Excluded from Version Control
+
+The following files are automatically excluded from Git:
+- `.env` (environment variables)
+- `credentials.json` (Google Calendar credentials)
+- `token.json` (Google OAuth tokens)
+- Planning and documentation files (not needed for app functionality)
+- Database files and logs
+
+### Production Deployment
+
+For production deployment:
+1. Set all environment variables securely in your hosting platform
+2. Use HTTPS for all webhook endpoints
+3. Configure proper firewall rules
+4. Use a production-grade database
+5. Set up monitoring and alerting
+
+## API Endpoints
+
+- `POST /webhook/evolution` - WhatsApp webhook endpoint
+- `GET /health` - Health check endpoint
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+python -m pytest
+
+# Run with coverage
+python -m pytest --cov=.
+```
+
+### Code Style
+
+This project follows PEP 8 style guidelines. Use a linter like `flake8` or `black` for code formatting.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions:
+- Check the documentation in the `docs/` folder
+- Review the configuration guides
+- Open an issue on GitHub
+
+---
+
+**Note**: This is a production-ready application designed for real-world barbershop operations. Ensure proper testing before deploying to production environments.
 
 ## 🤖 Core Architecture
 

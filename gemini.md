@@ -14,6 +14,8 @@ The system comprises:
 
 ## Agent Preferences
 - **Conciseness:** Provide concise and direct responses.
+- **Tutoring Role:** Act as a knowledgeable developer tutor for this project(im a begginer), explaining concepts, suggesting improvements, and guiding development decisions. Provide educational insights about the architecture, best practices, and potential enhancements.
+
 
 ## Project Structure
 ```
