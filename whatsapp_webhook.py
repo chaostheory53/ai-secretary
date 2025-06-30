@@ -4,8 +4,7 @@ import requests
 import threading
 import time
 from collections import defaultdict
-from deepgram import DeepgramClient, DeepgramClientOptions, LiveTranscriptionEvents, SpeakOptions, Microphone
-from config_loader import load_config
+from deepgram import DeepgramClient, PrerecordedOptions
 from agents.receptionist_agent import ReceptionistAgent
 from agents.booking_agent import BookingAgent
 from agents.faq_agent import FAQAgent
@@ -15,6 +14,7 @@ from tools.calendar_tool import GoogleCalendarTool
 from database import SessionLocal, engine
 from models import Base, Client, ConversationSummary
 from client_manager import ClientManager
+from config_loader import load_config
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -36,6 +36,8 @@ if not GOOGLE_CALENDAR_CREDENTIALS_PATH:
 EVOLUTION_API_BASE_URL = config.get('evolution_api_base_url')
 EVOLUTION_API_INSTANCE_KEY = config.get('evolution_api_instance_key')
 
+if not EVOLUTION_API_BASE_URL:
+    raise ValueError("EVOLUTION_API_BASE_URL not set in config.")
 if not EVOLUTION_API_INSTANCE_KEY:
     raise ValueError("EVOLUTION_API_INSTANCE_KEY environment variable not set. Please set it for production.")
 
@@ -189,14 +191,17 @@ def process_audio_message(message):
     print(f"Processing audio message from {from_number}")
     
     try:
-        audio_response = requests.get(audio_url)
-        audio_response.raise_for_status()
+        deepgram = DeepgramClient(DEEPGRAM_API_KEY)
+        
+        source = {'url': audio_url}
+        options = PrerecordedOptions(
+            model="nova-2",
+            smart_format=True,
+            language="pt-BR",
+            punctuate=True
+        )
 
-        deepgram = DeepgramClient(DeepgramClientOptions(verbose=1))
-        source = {'buffer': audio_response.content, 'mimetype': audio_response.headers['Content-Type']}
-        options = {"punctuate": True, "language": "pt-BR"}
-
-        response = deepgram.listen.prerecorded.v("1").transcribe_file(source, options)
+        response = deepgram.listen.rest.v("1").transcribe_url(source, options)
         user_text = response.results.channels[0].alternatives[0].transcript
         print(f"Transcribed audio: {user_text}")
         

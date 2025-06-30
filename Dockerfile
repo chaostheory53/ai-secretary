@@ -1,25 +1,34 @@
-# Use uma imagem base oficial do Python
-FROM python:3.9-slim-buster
+# Use a specific, slim Python base image for a smaller footprint
+FROM python:3.12-slim
 
-# Define o diretório de trabalho dentro do contêiner
+# Set environment variables for Python best practices in Docker
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory
 WORKDIR /app
 
-# Copia apenas o arquivo de requisitos primeiro para aproveitar o cache do Docker
+# Copy the requirements file and install dependencies
+# This leverages Docker's build cache, so dependencies are only re-installed when requirements.txt changes
 COPY requirements.txt .
-
-# Instala as dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o restante do código da aplicação para o diretório de trabalho
+# Create a non-root user and group for security
+# Running applications as a non-root user is a security best practice
+RUN addgroup --system app && adduser --system --group app
+
+# Copy the rest of the application code
 COPY . .
 
-# Expõe a porta que o Gunicorn usará (a mesma porta que o Flask usa por padrão)
+# Change the ownership of the application directory to the non-root user
+RUN chown -R app:app /app
+
+# Switch to the non-root user
+USER app
+
+# Expose the port the app runs on
 EXPOSE 5000
 
-# Comando para iniciar a aplicação com Gunicorn
-# O 'main:app' assume que sua aplicação Flask é uma variável 'app' no arquivo 'main.py'
-# No seu caso, a aplicação Flask é definida em whatsapp_webhook.py e o ponto de entrada é run_webhook_server()
-# Precisamos ajustar isso para que o Gunicorn possa servir a aplicação Flask corretamente.
-# A forma mais comum é ter a instância 'app' do Flask diretamente acessível.
-# Vou ajustar o comando para apontar para a instância 'app' definida em whatsapp_webhook.py
-CMD ["gunicorn", "whatsapp_webhook:app", "--bind", "0.0.0.0:5000"]
+# Set the default command to run the application with Gunicorn
+# --workers 3 is a sensible default; adjust based on your server's core count (e.g., (2 * cores) + 1)
+CMD ["gunicorn", "whatsapp_webhook:app", "--bind", "0.0.0.0:5000", "--workers", "3"]
