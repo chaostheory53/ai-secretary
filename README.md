@@ -84,6 +84,23 @@ barber-ai-secretary/
    python whatsapp_webhook.py
    ```
 
+## Local Development with Docker Compose
+
+For a streamlined local development experience, you can use Docker Compose to start the application, the Evolution API, and a PostgreSQL database with a single command.
+
+### Prerequisites
+
+- Docker and Docker Compose installed.
+- A `.env` file in the project root with your `GEMINI_API_KEY`, `DEEPGRAM_API_KEY`, and `GOOGLE_CREDENTIALS_JSON`.
+
+### Running the Application
+
+1. **Build and start the services:**
+   ```bash
+   docker-compose up --build
+   ```
+2. The application will be available at `http://localhost:5000`, and the Evolution API will be at `http://localhost:8080`.
+
 ## Configuration
 
 ### Services Configuration

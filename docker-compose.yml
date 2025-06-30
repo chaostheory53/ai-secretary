@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: barber_ai_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: barber_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  evolution-api:
+    image: atende/evolution-api
+    container_name: evolution_api
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=your_evolution_api_key
+      - DATABASE_CONNECTION_URI=postgres://user:password@db:5432/evolution_api
+    depends_on:
+      - db
+
+  barber-ai-secretary:
+    build: .
+    container_name: barber_ai_secretary
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/barber_ai
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
+      - EVOLUTION_API_BASE_URL=http://evolution-api:8080
+      - EVOLUTION_API_INSTANCE_KEY=your_evolution_instance_key
+      - GOOGLE_CREDENTIALS_JSON=${GOOGLE_CREDENTIALS_JSON}
+    depends_on:
+      - db
+      - evolution-api
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data: 
