@@ -1,0 +1,150 @@
+# Barbershop Database Design
+
+This document provides a clean, scalable, and practical database schema for managing a barbershop business. It includes best practices, improvements, and SQL samples for easy implementation and future growth.
+
+---
+
+## 1. Core Entities
+
+- **Customers**: People who book appointments.
+- **Barbers**: Staff members providing services.
+- **Services**: Offered procedures (e.g., haircut, shave).
+- **Appointments**: Bookings between customers and barbers.
+- **Payments** (optional): Tracks transactions.
+- **Waitlist** (optional): For walk-ins or overflow.
+
+---
+
+## 2. Entity-Relationship Overview
+
+```
+Customers --< Appointments >-- Barbers
+      \                        /
+       \                      /
+     Appointment_Services >-- Services
+```
+
+---
+
+## 3. Improved SQL Schema
+
+```sql
+-- Customers table: tracks all customers with soft delete and timestamps
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address VARCHAR(255),
+    notes TEXT,
+    profile_image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Barbers table: holds barber/staff info with soft delete and timestamps
+CREATE TABLE barbers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    hire_date DATE,
+    profile_image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Services table: each service can have a category for filtering
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    price DECIMAL(8,2) NOT NULL,
+    duration_mins INT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Appointments table: tracks each booking, with status and notes
+CREATE TABLE appointments (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
+    barber_id INTEGER NOT NULL REFERENCES barbers(id),
+    appointment_time TIMESTAMP NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('scheduled', 'completed', 'cancelled', 'no_show')) DEFAULT 'scheduled',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Appointment_Services table: allows for many-to-many between appointments and services
+CREATE TABLE appointment_services (
+    appointment_id INTEGER NOT NULL REFERENCES appointments(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES services(id),
+    PRIMARY KEY (appointment_id, service_id)
+);
+
+-- Payments table: optional, tracks payments per appointment
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    appointment_id INTEGER NOT NULL REFERENCES appointments(id),
+    amount DECIMAL(8,2) NOT NULL,
+    method VARCHAR(30) NOT NULL, -- e.g., 'cash', 'card'
+    paid_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Waitlist table: optional, for managing walk-ins
+CREATE TABLE waitlist (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
+    added_at TIMESTAMP DEFAULT NOW(),
+    status VARCHAR(20) CHECK (status IN ('waiting', 'notified', 'removed')) DEFAULT 'waiting',
+    notes TEXT
+);
+
+-- Example: Add indexes for performance
+CREATE INDEX idx_appointments_customer_id ON appointments(customer_id);
+CREATE INDEX idx_appointments_barber_id ON appointments(barber_id);
+CREATE INDEX idx_appointments_time ON appointments(appointment_time);
+```
+
+---
+
+## 4. Best Practices & Improvements
+
+- **Soft Deletes:** Use `is_active` or timestamp fields to hide records instead of deleting.
+- **Timestamps:** Track creation and update dates for all tables.
+- **Service Categories:** Useful for filtering and reporting.
+- **Appointment Notes:** Store special requests or customer preferences.
+- **Status Fields:** Keep appointment and waitlist status consistent via enums/checks.
+- **Indexes:** For frequent queries, add indexes on foreign keys and appointment times.
+- **Extensibility:** Easily add features like loyalty programs, inventory, etc.
+
+---
+
+## 5. Saving & Using This Document
+
+- **Copy & Paste** into your favorite note-taking app, text editor, or GitHub repo.
+- **Save as PDF** using your browser’s print function.
+- **Create a Gist** on GitHub for version control and sharing.
+
+---
+
+## 6. Example Query: Find Upcoming Appointments
+
+```sql
+SELECT a.id, c.name AS customer, b.name AS barber, a.appointment_time, a.status
+FROM appointments a
+JOIN customers c ON a.customer_id = c.id
+JOIN barbers b ON a.barber_id = b.id
+WHERE a.appointment_time > NOW()
+  AND a.status = 'scheduled'
+ORDER BY a.appointment_time ASC;
+```
+
+---
+
+**Happy Hacking!** ✂️💈  
